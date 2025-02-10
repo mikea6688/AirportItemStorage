@@ -416,6 +416,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Page<OrderLogistics> logisticsPage = orderLogisticsMapper.selectPage(page, queryOrderLogisticsListWrapper);
+        if(logisticsPage.getRecords().isEmpty())return new GetAllOrderLogisticsListResponse();
 
         List<Long> userIds = logisticsPage.getRecords().stream().map(OrderLogistics::getUserId).toList();
         List<User> users = userMapper.selectBatchIds(userIds);
