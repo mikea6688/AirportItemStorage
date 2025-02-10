@@ -96,8 +96,9 @@ public class UserServiceImpl implements UserService{
         if (userForRegisterDto == null)return 0;
 
         var user = new User(userForRegisterDto);
+        if(userMapper.insert(user) != 1) return 0;
 
-        return userMapper.insert(user);
+        return 1;
     }
 
     @Override

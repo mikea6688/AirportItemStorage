@@ -109,9 +109,11 @@ public class OrderServiceImpl implements OrderService {
     private boolean CheckUserPoint(long userId) {
         var queryUserPointWrapper = new QueryWrapper<UserPoint>();
         queryUserPointWrapper.eq("user_id", userId);
-        UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
+        List<UserPoint> userPoints = userPointMapper.selectList(queryUserPointWrapper);
 
-        return !(userPoint.getPoint() >= 0);
+        UserPoint userPoint = userPoints.stream().findFirst().orElse(null);
+
+        return userPoint == null || !(userPoint.getPoint() >= 0);
     }
 
     @Override
@@ -275,7 +277,7 @@ public class OrderServiceImpl implements OrderService {
         queryWrapper.eq("user_id", user.getId());
         Page<OrderLogistics> orderLogisticsPage = orderLogisticsMapper.selectPage(page, queryWrapper);
 
-        if(orderLogisticsPage == null) return null;
+        if(orderLogisticsPage == null || orderLogisticsPage.getRecords().isEmpty()) return null;
 
         var orderIds = orderLogisticsPage.getRecords().stream().map(OrderLogistics::getOrderId).toList();
 
@@ -515,17 +517,14 @@ public class OrderServiceImpl implements OrderService {
         List<OrderStatisticalDto> dataList = new ArrayList<>();
 
         for (Map<String, Object> map : result) {
-            java.sql.Date daySqlDate = (java.sql.Date) map.get("day");  // 获取 java.sql.Date 类型的数据
+            java.sql.Date daySqlDate = (java.sql.Date) map.get("day");
 
-            // 将 java.sql.Date 转换为 LocalDate
-            LocalDate day = daySqlDate.toLocalDate();  // 获取到日期部分，不含时间
+            LocalDate day = daySqlDate.toLocalDate();
 
-            // 如果你需要将 LocalDate 转换为 LocalDateTime，可以设置时间部分为开始时间（00:00:00）
-            LocalDateTime startOfDay = day.atStartOfDay();  // 将 LocalDate 转换为 LocalDateTime，时间部分为 00:00:00
+            LocalDateTime startOfDay = day.atStartOfDay();
 
             Long orderCount = (Long) map.get("order_count");
 
-            // 创建 OrderStatisticalDto 对象，并设置日期和订单数量
             OrderStatisticalDto orderStatisticalData = new OrderStatisticalDto();
             orderStatisticalData.setDate(startOfDay);  // 设置 LocalDateTime 类型的日期
             orderStatisticalData.setUsageCount(orderCount.intValue());  // 将 Long 转换为 int

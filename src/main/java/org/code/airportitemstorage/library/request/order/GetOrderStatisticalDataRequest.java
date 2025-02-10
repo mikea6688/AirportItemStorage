@@ -6,6 +6,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class GetOrderStatisticalDataRequest {
-    public LocalDateTime StartTime;
-    public LocalDateTime EndTime;
+    public LocalDateTime startTime;
+    public LocalDateTime endTime;
 }
