@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -555,7 +554,6 @@ public class OrderServiceImpl implements OrderService {
             case ThreeDays -> Duration.ofDays(3).toSeconds();
             case OneWeek -> Duration.ofDays(7).toSeconds();
             case OneMonth -> Duration.ofDays(30).toSeconds();
-            default -> throw new UnsupportedOperationException("Unsupported date type: " + dateType);
         };
     }
 
