@@ -24,4 +24,8 @@ public interface OrderService  {
     GetAllOrderLostItemResponse GetAllOrderLostItemList(GetAllOrderLostItemRequest request);
 
     GetOrderStatisticalDataResponse GetOrderStatistical(GetOrderStatisticalDataRequest request);
+
+    int DeleteOrderLostItem(long id) throws Exception;
+
+    int OperateLogisticsOrder(OperateLogisticsOrderRequest request) throws Exception;
 }

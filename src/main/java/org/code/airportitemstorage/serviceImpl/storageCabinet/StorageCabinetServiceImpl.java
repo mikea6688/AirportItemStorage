@@ -3,7 +3,9 @@ package org.code.airportitemstorage.serviceImpl.storageCabinet;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.code.airportitemstorage.library.OrderLogisticsStatus;
 import org.code.airportitemstorage.library.OrderStorageStatus;
+import org.code.airportitemstorage.library.RoleType;
 import org.code.airportitemstorage.library.dto.storage.StorageCabinetDto;
 import org.code.airportitemstorage.library.dto.storage.StorageCabinetSettingDto;
 import org.code.airportitemstorage.library.entity.orders.Order;
@@ -140,15 +142,24 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
                 storageCabinetMapper.updateById(storageCabinet);
             }
             case TakeOut -> {
-                var querySettingWrapper = new QueryWrapper<StorageCabinetSetting>();
-                querySettingWrapper.eq("size_type", storageCabinet.getSizeType());
-
-                var storageCabinetSettings = storageCabinetSettingMapper.selectList(querySettingWrapper);
-
                 var storageDuration = Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
 
-                response.storageDuration = storageDuration;
-                response.totalPrice = orderService.CalculateTotalPrice(order, storageDuration, storageCabinetSettings);
+                if(request.isLostItemOrder() && user.getRoleType() == RoleType.Admin){
+                    order.setTotalStoredDuration(storageDuration);
+                    order.setStorageStatus(OrderStorageStatus.TakenOut);
+                    orderMapper.updateById(order);
+
+                    storageCabinet.setStored(false);
+                    storageCabinetMapper.updateById(storageCabinet);
+                }else{
+                    var querySettingWrapper = new QueryWrapper<StorageCabinetSetting>();
+                    querySettingWrapper.eq("size_type", storageCabinet.getSizeType());
+
+                    var storageCabinetSettings = storageCabinetSettingMapper.selectList(querySettingWrapper);
+
+                    response.storageDuration = storageDuration;
+                    response.totalPrice = orderService.CalculateTotalPrice(order, storageDuration, storageCabinetSettings);
+                }
             }
             case Delivery ->{
                 OrderLogistics orderLogistics = BuildOrderLogistics(request, user);
@@ -167,6 +178,7 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
         orderLogistics.setPhone(request.userOrderLogistics.getPhone());
         orderLogistics.setDeliveryAddress(request.userOrderLogistics.getDeliveryAddress());
         orderLogistics.setPaymentMethod(request.userOrderLogistics.getPaymentMethod());
+        orderLogistics.setStatus(OrderLogisticsStatus.Pending);
         orderLogistics.setUserId(user.getId());
         return orderLogistics;
     }

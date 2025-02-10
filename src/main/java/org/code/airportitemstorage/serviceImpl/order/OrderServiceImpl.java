@@ -3,10 +3,7 @@ package org.code.airportitemstorage.serviceImpl.order;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.code.airportitemstorage.library.OrderStorageStatus;
-import org.code.airportitemstorage.library.RoleType;
-import org.code.airportitemstorage.library.StorageCabinetSizeType;
-import org.code.airportitemstorage.library.StorageDateType;
+import org.code.airportitemstorage.library.*;
 import org.code.airportitemstorage.library.dto.order.OrderLogisticsDto;
 import org.code.airportitemstorage.library.dto.order.OrderLostItemDto;
 import org.code.airportitemstorage.library.dto.order.OrderStatisticalDto;
@@ -34,6 +31,7 @@ import org.code.airportitemstorage.service.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.AuthenticationException;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -195,14 +193,9 @@ public class OrderServiceImpl implements OrderService {
 
         StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
 
-        var querySettingWrapper = new QueryWrapper<StorageCabinetSetting>();
-        querySettingWrapper.eq("size_type", storageCabinet.getSizeType());
-
-        var storageCabinetSettings = storageCabinetSettingMapper.selectList(querySettingWrapper);
-
         var storageDuration = Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
 
-        float totalPrice = CalculateTotalPrice(order, storageDuration, storageCabinetSettings);
+        float totalPrice = HandleOrderTotalPrice(storageCabinet.getSizeType(), order, storageDuration);
 
         // 更新订单信息
         order.setPrice(totalPrice);
@@ -226,6 +219,17 @@ public class OrderServiceImpl implements OrderService {
         CheckUserMeetsRequirementsForVip(user);
 
         return true;
+    }
+
+    private float HandleOrderTotalPrice(StorageCabinetSizeType sizeType, Order order, long duration) {
+        var querySettingWrapper = new QueryWrapper<StorageCabinetSetting>();
+        querySettingWrapper.eq("size_type", sizeType);
+
+        var storageCabinetSettings = storageCabinetSettingMapper.selectList(querySettingWrapper);
+
+        var storageDuration = duration > 0 ? duration: Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
+
+        return CalculateTotalPrice(order, storageDuration, storageCabinetSettings);
     }
 
     private void CheckUserMeetsRequirementsForVip(User user) {
@@ -442,6 +446,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setRecipient(logistics.getRecipient());
             dto.setPhone(logistics.getPhone());
             dto.setDeliveryAddress(logistics.getDeliveryAddress());
+            dto.setLogisticsStatus(logistics.getStatus());
 
             orderLogisticsList.add(dto);
         }
@@ -533,6 +538,73 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return new GetOrderStatisticalDataResponse(dataList);
+    }
+
+    @Override
+    public int DeleteOrderLostItem(long id) throws Exception {
+        Order order = orderMapper.selectById(id);
+        if(order == null || !order.isLostItem()) throw new Exception("Not found order or is not belong lost item.");
+
+        StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
+        storageCabinet.setStored(false);
+        if(storageCabinetMapper.updateById(storageCabinet) != 1)return 0;
+
+        return orderMapper.deleteById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int OperateLogisticsOrder(OperateLogisticsOrderRequest request) throws Exception {
+        try{
+            User user = userService.CheckUserAuthorization();
+            if (user == null) throw new AuthenticationException("Not authorized to operate logistics order.");
+
+            Order order = orderMapper.selectById(request.getOrderId());
+            if (order == null) throw new Exception("Not found order");
+
+            StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
+
+            var queryOrderLogisticsWrapper = new QueryWrapper<OrderLogistics>();
+            queryOrderLogisticsWrapper.eq("order_id", request.getOrderId());
+            OrderLogistics orderLogistics = orderLogisticsMapper.selectOne(queryOrderLogisticsWrapper);
+            if(orderLogistics == null ||
+                    orderLogistics.getStatus() == OrderLogisticsStatus.Arrived ||
+                    orderLogistics.getStatus() == OrderLogisticsStatus.Discarded) throw new Exception("Cannot operate logistics order.");
+
+            var queryUserPointWrapper = new QueryWrapper<UserPoint>();
+            queryUserPointWrapper.eq("user_id", order.getUserId());
+            UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
+
+            switch (request.getOperateType())
+            {
+                case Delivery -> {
+                    storageCabinet.setStored(false);
+
+                    order.setStorageStatus(OrderStorageStatus.TakenOut);
+                    order.setPrice(HandleOrderTotalPrice(storageCabinet.getSizeType(), order, 0));
+
+                    orderLogistics.setStatus(OrderLogisticsStatus.InTransit);
+
+                    if(orderMapper.updateById(order) != 1 ||
+                            storageCabinetMapper.updateById(storageCabinet) != 1 ||
+                            orderLogisticsMapper.updateById(orderLogistics) != 1)
+                        throw new Exception("Data exception Please try again later！");
+                }
+                case Arrival -> {
+                    orderLogistics.setStatus(OrderLogisticsStatus.Arrived);
+                    userPoint.setPoint(userPoint.getPoint() - order.getPrice());
+
+                    if(userPointMapper.updateById(userPoint) != 1 ||
+                            orderLogisticsMapper.updateById(orderLogistics) != 1)
+                        throw new Exception("Data exception Please try again later！");
+                }
+            }
+        }
+        catch(Exception e){
+            throw new Exception(e.getMessage());
+        }
+        
+        return 1;
     }
 
     public void calculateOrderEndTime(OrderLostItemDto order, StorageDateType dateType) {

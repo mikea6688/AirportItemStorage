@@ -8,6 +8,8 @@ import org.code.airportitemstorage.library.dto.order.UserOrderLogisticsDto;
 public class OperateUserStorageCabinetRequest {
     public long orderId;
 
+    public boolean isLostItemOrder;
+
     public OperateStorageCabinetType operateType;
 
     public UserOrderLogisticsDto userOrderLogistics;

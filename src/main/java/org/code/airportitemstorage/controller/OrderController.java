@@ -42,9 +42,19 @@ public class OrderController {
         return orderService.GetAllOrderLogisticsList(request);
     }
 
+    @PostMapping("logistics/operate")
+    public int operateLogisticsOrder(@RequestBody OperateLogisticsOrderRequest request) throws Exception {
+        return orderService.OperateLogisticsOrder(request);
+    }
+
     @GetMapping("lost/all")
     public GetAllOrderLostItemResponse getAllOrderLostItemList(GetAllOrderLostItemRequest request){
         return orderService.GetAllOrderLostItemList(request);
+    }
+
+    @PostMapping("lost/delete")
+    public int deleteOrderLostItem(@RequestBody long id) throws Exception {
+        return orderService.DeleteOrderLostItem(id);
     }
 
     @GetMapping("statistical")
