@@ -5,7 +5,7 @@ import org.code.airportitemstorage.library.OperateLogisticsOrderType;
 
 @Data
 public class OperateLogisticsOrderRequest {
-    public long orderId;
+    public long id;
 
     public OperateLogisticsOrderType operateType;
 }

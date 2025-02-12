@@ -559,17 +559,15 @@ public class OrderServiceImpl implements OrderService {
             User user = userService.CheckUserAuthorization();
             if (user == null) throw new AuthenticationException("Not authorized to operate logistics order.");
 
-            Order order = orderMapper.selectById(request.getOrderId());
-            if (order == null) throw new Exception("Not found order");
-
-            StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
-
-            var queryOrderLogisticsWrapper = new QueryWrapper<OrderLogistics>();
-            queryOrderLogisticsWrapper.eq("order_id", request.getOrderId());
-            OrderLogistics orderLogistics = orderLogisticsMapper.selectOne(queryOrderLogisticsWrapper);
+            OrderLogistics orderLogistics = orderLogisticsMapper.selectById(request.getId());
             if(orderLogistics == null ||
                     orderLogistics.getStatus() == OrderLogisticsStatus.Arrived ||
                     orderLogistics.getStatus() == OrderLogisticsStatus.Discarded) throw new Exception("Cannot operate logistics order.");
+
+            Order order = orderMapper.selectById(orderLogistics.getOrderId());
+            if (order == null) throw new Exception("Not found order");
+
+            StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
 
             var queryUserPointWrapper = new QueryWrapper<UserPoint>();
             queryUserPointWrapper.eq("user_id", order.getUserId());
@@ -603,7 +601,7 @@ public class OrderServiceImpl implements OrderService {
         catch(Exception e){
             throw new Exception(e.getMessage());
         }
-        
+
         return 1;
     }
 
@@ -612,6 +610,7 @@ public class OrderServiceImpl implements OrderService {
 
         endTime = switch (dateType) {
             case OneWeek -> endTime.plusWeeks(1);
+
             case OneMonth -> endTime.plusMonths(1);
             default -> throw new IllegalArgumentException("不支持的日期类型: " + dateType);
         };
