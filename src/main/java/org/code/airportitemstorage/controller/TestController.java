@@ -1,32 +1,44 @@
 package org.code.airportitemstorage.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import org.code.airportitemstorage.library.dto.users.UserDto;
-import org.code.airportitemstorage.library.entity.user.User;
-import org.code.airportitemstorage.mapper.users.UserMapper;
-import org.code.airportitemstorage.service.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.code.airportitemstorage.job.recurringJob.MyJob;
+import org.code.airportitemstorage.service.QuartzService;
+import org.quartz.JobDetail;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.quartz.*;
+
+import java.util.Date;
 
 @RestController
+@RequiredArgsConstructor
 public class TestController {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private UserMapper userMapper;
+    private final QuartzService quartzService;
 
-    @Operation(summary = "测试接口")
-    @GetMapping("/h")
-    public String h() {
-        UserDto user = userService.GetUserById(1);
-        System.out.println(user);
-        return "获取用户信息";
-    }
+    @GetMapping("job")
+    public String job() {
+        try {
+            JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+                    .withIdentity("myJob", "group1")
+                    .build();
 
-    @PostMapping("add")
-    public int add(User user) {
-        return userMapper.insert(user);
+            Date triggerTime = DateBuilder.futureDate(2, DateBuilder.IntervalUnit.MINUTE);
+
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity("myTrigger", "group1")
+                    .startAt(triggerTime)
+//                    .startNow()  // 从当前时间开始执行
+//                    .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+//                            .withIntervalInSeconds(10)  // 每10秒执行一次
+//                            .repeatForever())
+                    .build();
+
+            quartzService.scheduleJob(jobDetail, trigger);
+            return "任务已调度成功!";
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return "调度任务失败!";
+        }
     }
 }

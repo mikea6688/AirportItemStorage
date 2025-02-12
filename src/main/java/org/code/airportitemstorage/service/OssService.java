@@ -26,16 +26,16 @@ public class OssService {
         try (InputStream inputStream = file.getInputStream()) {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileName, inputStream);
             ossClient.putObject(putObjectRequest);
-            return fileName;  // ·µ»Ø´æ´¢ÔÚ OSS ÉÏµÄÎÄ¼şÃû£¬»òÕß¿ÉÒÔ¸ù¾İĞèÒª·µ»ØÎÄ¼şµÄ URL
+            return fileName;  // è¿”å›å­˜å‚¨åœ¨ OSS ä¸Šçš„æ–‡ä»¶åï¼Œæˆ–è€…å¯ä»¥æ ¹æ®éœ€è¦è¿”å›æ–‡ä»¶çš„ URL
         } catch (Exception e) {
-            throw new RuntimeException("ÉÏ´«ÎÄ¼şÊ§°Ü", e);
+            throw new RuntimeException("ä¸Šä¼ æ–‡ä»¶å¤±è´¥", e);
         }
     }
 
     public String getImageUrl(String fileName) {
         if(fileName == null || fileName.isEmpty())return null;
 
-        return  "https://" + bucketName + "." + endpoint + "/" + fileName;  // Í¼Æ¬µÄURL
+        return  "https://" + bucketName + "." + endpoint + "/" + fileName;  // å›¾ç‰‡çš„URL
     }
 
 }

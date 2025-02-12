@@ -55,7 +55,7 @@ public class OrderServiceImpl implements OrderService {
     private static final int OrderThresholdForVIP = 10;
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // ÊÂÎñ¹ÜÀí£¬³öÏÖÒì³£×Ô¶¯»Ø¹ö
+    @Transactional(rollbackFor = Exception.class) // äº‹åŠ¡ç®¡ç†ï¼Œå‡ºç°å¼‚å¸¸è‡ªåŠ¨å›æ»š
     public int AddUserOrder(AddOrderRequest request) throws Exception {
         try{
             User user = userService.CheckUserAuthorization();
@@ -197,16 +197,16 @@ public class OrderServiceImpl implements OrderService {
 
         float totalPrice = HandleOrderTotalPrice(storageCabinet.getSizeType(), order, storageDuration);
 
-        // ¸üĞÂ¶©µ¥ĞÅÏ¢
+        // æ›´æ–°è®¢å•ä¿¡æ¯
         order.setPrice(totalPrice);
         order.setTotalStoredDuration(storageDuration);
         order.setStorageStatus(OrderStorageStatus.TakenOut);
 
-        // ¿Û³ı»ı·Ö
+        // æ‰£é™¤ç§¯åˆ†
         UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
         userPoint.setPoint(userPoint.getPoint() - totalPrice);
 
-        // ¸üĞÂ¹ñ×Ó´æ´¢×´Ì¬
+        // æ›´æ–°æŸœå­å­˜å‚¨çŠ¶æ€
         storageCabinet.setStored(false);
 
         if(orderMapper.updateById(order) == 0 ||
@@ -215,7 +215,7 @@ public class OrderServiceImpl implements OrderService {
                 orderPaySuccessRecordMapper.insert(new OrderPaySuccessRecord(order.getId(), user.getId())) == 0)
             throw new Exception("Update failed, Please to operate later.");
 
-        // ÅĞ¶ÏÊÇ·ñÄÜ³ÉÎªVIP
+        // åˆ¤æ–­æ˜¯å¦èƒ½æˆä¸ºVIP
         CheckUserMeetsRequirementsForVip(user);
 
         return true;
@@ -248,20 +248,20 @@ public class OrderServiceImpl implements OrderService {
     public float CalculateTotalPrice(Order order, long storageDuration, List<StorageCabinetSetting> cabinetSettings) {
         float estimatedPrice = order.getEstimatedPrice();
 
-        // Ô¤ÆÚµÄÊ±¼ä
+        // é¢„æœŸçš„æ—¶é—´
         long estimatedTime = getEstimatedTime(order.getDateType());
 
-        // Èç¹ûÒÑ¹ıµÄÊ±¼ä´óÓÚÔ¤ÆÚÊ±¼ä£¬Ôò¼ÆËã²î¶î
+        // å¦‚æœå·²è¿‡çš„æ—¶é—´å¤§äºé¢„æœŸæ—¶é—´ï¼Œåˆ™è®¡ç®—å·®é¢
         if (storageDuration > estimatedTime) {
             long diffInDays = calculateDaysDifference(storageDuration, estimatedTime);
 
-            // »ñÈ¡¶ÔÓ¦ÈÕÆÚÀàĞÍµÄ¹ñ×ÓÉèÖÃ
+            // è·å–å¯¹åº”æ—¥æœŸç±»å‹çš„æŸœå­è®¾ç½®
             StorageCabinetSetting cabinetSetting = getCabinetSettingByDays(diffInDays, cabinetSettings);
 
-            // Èç¹ûÃ»ÓĞÕÒµ½¶ÔÓ¦µÄ¹ñ×ÓÉèÖÃ£¬Ôò·µ»ØÔ­¼Û
+            // å¦‚æœæ²¡æœ‰æ‰¾åˆ°å¯¹åº”çš„æŸœå­è®¾ç½®ï¼Œåˆ™è¿”å›åŸä»·
             if (cabinetSetting == null) return estimatedPrice;
 
-            // ¸ù¾İ³¬³öÌìÊı¼ÆËã¶îÍâ·ÑÓÃ
+            // æ ¹æ®è¶…å‡ºå¤©æ•°è®¡ç®—é¢å¤–è´¹ç”¨
             estimatedPrice = calculatePriceBasedOnDiff(diffInDays, cabinetSetting, estimatedPrice);
         }
 
@@ -531,10 +531,10 @@ public class OrderServiceImpl implements OrderService {
             Long orderCount = (Long) map.get("order_count");
 
             OrderStatisticalDto orderStatisticalData = new OrderStatisticalDto();
-            orderStatisticalData.setDate(startOfDay);  // ÉèÖÃ LocalDateTime ÀàĞÍµÄÈÕÆÚ
-            orderStatisticalData.setUsageCount(orderCount.intValue());  // ½« Long ×ª»»Îª int
+            orderStatisticalData.setDate(startOfDay);  // è®¾ç½® LocalDateTime ç±»å‹çš„æ—¥æœŸ
+            orderStatisticalData.setUsageCount(orderCount.intValue());  // å°† Long è½¬æ¢ä¸º int
 
-            dataList.add(orderStatisticalData);  // ½«½á¹ûÌí¼Óµ½Êı¾İÁĞ±í
+            dataList.add(orderStatisticalData);  // å°†ç»“æœæ·»åŠ åˆ°æ•°æ®åˆ—è¡¨
         }
 
         return new GetOrderStatisticalDataResponse(dataList);
@@ -586,7 +586,7 @@ public class OrderServiceImpl implements OrderService {
                     if(orderMapper.updateById(order) != 1 ||
                             storageCabinetMapper.updateById(storageCabinet) != 1 ||
                             orderLogisticsMapper.updateById(orderLogistics) != 1)
-                        throw new Exception("Data exception Please try again later£¡");
+                        throw new Exception("Data exception Please try again laterï¼");
                 }
                 case Arrival -> {
                     orderLogistics.setStatus(OrderLogisticsStatus.Arrived);
@@ -594,7 +594,7 @@ public class OrderServiceImpl implements OrderService {
 
                     if(userPointMapper.updateById(userPoint) != 1 ||
                             orderLogisticsMapper.updateById(orderLogistics) != 1)
-                        throw new Exception("Data exception Please try again later£¡");
+                        throw new Exception("Data exception Please try again laterï¼");
                 }
             }
         }
@@ -612,13 +612,13 @@ public class OrderServiceImpl implements OrderService {
             case OneWeek -> endTime.plusWeeks(1);
 
             case OneMonth -> endTime.plusMonths(1);
-            default -> throw new IllegalArgumentException("²»Ö§³ÖµÄÈÕÆÚÀàĞÍ: " + dateType);
+            default -> throw new IllegalArgumentException("ä¸æ”¯æŒçš„æ—¥æœŸç±»å‹: " + dateType);
         };
 
         order.setEndTime(endTime);
     }
 
-    // ¸ù¾İÈÕÆÚÀàĞÍ»ñÈ¡Ô¤ÆÚÊ±¼ä£¨Ãë£©
+    // æ ¹æ®æ—¥æœŸç±»å‹è·å–é¢„æœŸæ—¶é—´ï¼ˆç§’ï¼‰
     private long getEstimatedTime(StorageDateType dateType) {
         return switch (dateType) {
             case ThreeDays -> Duration.ofDays(3).toSeconds();
@@ -627,13 +627,13 @@ public class OrderServiceImpl implements OrderService {
         };
     }
 
-    // ¼ÆËãÒÑ¹ıÌìÊı
+    // è®¡ç®—å·²è¿‡å¤©æ•°
     private long calculateDaysDifference(long pastTime, long estimatedTime) {
-        long diff = pastTime - estimatedTime; // ²î¾àµÄÃëÊı
-        return diff / (24 * 60 * 60); // ¼ÆËãÌìÊı
+        long diff = pastTime - estimatedTime; // å·®è·çš„ç§’æ•°
+        return diff / (24 * 60 * 60); // è®¡ç®—å¤©æ•°
     }
 
-    // »ñÈ¡¶ÔÓ¦ÌìÊıµÄ¹ñ×ÓÉèÖÃ
+    // è·å–å¯¹åº”å¤©æ•°çš„æŸœå­è®¾ç½®
     private StorageCabinetSetting getCabinetSettingByDays(long diffInDays, List<StorageCabinetSetting> cabinetSettings) {
         if (diffInDays <= 3 && diffInDays > 0) {
             return cabinetSettings.stream().filter(x -> x.getDateType() == StorageDateType.ThreeDays).findFirst().orElse(null);
@@ -645,14 +645,14 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
-    // ¸ù¾İÌìÊı²îÒì¼ÆËã¼Û¸ñ
+    // æ ¹æ®å¤©æ•°å·®å¼‚è®¡ç®—ä»·æ ¼
     private float calculatePriceBasedOnDiff(long diffInDays, StorageCabinetSetting cabinetSetting, float estimatedPrice) {
         if (diffInDays <= 3) {
             estimatedPrice += cabinetSetting.getPrice();
         } else if (diffInDays <= 7) {
             estimatedPrice += cabinetSetting.getPrice();
         } else {
-            long monthCount = diffInDays / 30;  // Ê¹ÓÃ30ÌìÎªÒ»¸öÔÂ
+            long monthCount = diffInDays / 30;  // ä½¿ç”¨30å¤©ä¸ºä¸€ä¸ªæœˆ
             estimatedPrice += monthCount * cabinetSetting.getPrice();
         }
         return estimatedPrice;

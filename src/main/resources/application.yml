@@ -23,6 +23,20 @@ spring:
       mode: always
       schema-locations:
         - classpath:sql/start.sql
+#  org:
+#    quartz:
+#      jobStore:
+#        class: org.quartz.impl.jdbcjobstore.JobStoreTX
+#        tablePrefix: QRTZ_
+#        dataSource: qzDS
+#      dataSources:
+#        qzDS:
+#          driver: ${spring.datasource.driver-class-name}
+#          provider: hikaricp
+#          URL: ${spring.datasource.url}
+#          user: ${spring.datasource.username}
+#          password: ${spring.datasource.password}
+#          maxConnections: 10
 server:
   port: 8080
 mybatis:
