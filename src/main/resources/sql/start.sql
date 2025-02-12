@@ -137,6 +137,3 @@ INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, l
 INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, length, date_type, price) VALUES (8, 'Large', '80', '50', '50', 'OneWeek', 30);
 INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, length, date_type, price) VALUES (9, 'Large', '80', '50', '50', 'OneMonth', 50);
 
-UPDATE mydb.storage_cabinet_setting
-SET price = 20
-WHERE id = 1;
