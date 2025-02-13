@@ -1,7 +1,7 @@
 package org.code.airportitemstorage.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.code.airportitemstorage.job.recurringJob.MyJob;
+import org.code.airportitemstorage.job.MyJob;
 import org.code.airportitemstorage.service.QuartzService;
 import org.code.airportitemstorage.service.email.IEmailService;
 import org.quartz.JobDetail;
