@@ -19,7 +19,9 @@ public class TestController {
     public String job() {
         try {
             JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+                    .storeDurably()
                     .withIdentity("myJob", "group1")
+                    .usingJobData("name", "myJob")
                     .build();
 
             Date triggerTime = DateBuilder.futureDate(2, DateBuilder.IntervalUnit.MINUTE);

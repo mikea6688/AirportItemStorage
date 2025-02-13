@@ -137,3 +137,5 @@ INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, l
 INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, length, date_type, price) VALUES (8, 'Large', '80', '50', '50', 'OneWeek', 30);
 INSERT IGNORE INTO mydb.storage_cabinet_setting (id, size_type, height, width, length, date_type, price) VALUES (9, 'Large', '80', '50', '50', 'OneMonth', 50);
 
+INSERT IGNORE INTO mydb.user (id, account_name, nick_name, password, avatar_picture, phone, email, role_type, address, pay_password)
+VALUES (10, 'admin', 'boss', '123456', 'https://fortest1304055.oss-cn-beijing.aliyuncs.com/45a00c7a-9fc8-444d-af36-bf4986e6caa1_user.jpg', '111222', '1304055@qq.com', 'Admin', 'china', '123');
