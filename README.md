@@ -2,5 +2,7 @@
 
 springboot3、swagger、meybatis、lombok等等
 
-sql:
-待补充。。。
+sql: 启动项目自动初始化实体表
+
+quartz表初始化
+
