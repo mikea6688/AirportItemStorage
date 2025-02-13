@@ -3,8 +3,10 @@ package org.code.airportitemstorage.controller;
 import lombok.RequiredArgsConstructor;
 import org.code.airportitemstorage.job.recurringJob.MyJob;
 import org.code.airportitemstorage.service.QuartzService;
+import org.code.airportitemstorage.service.email.IEmailService;
 import org.quartz.JobDetail;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.quartz.*;
 
@@ -14,6 +16,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class TestController {
     private final QuartzService quartzService;
+    private final IEmailService emailService;
 
     @GetMapping("job")
     public String job() {
@@ -41,6 +44,18 @@ public class TestController {
         catch (Exception e){
             e.printStackTrace();
             return "调度任务失败!";
+        }
+    }
+
+    @PostMapping("sent/email")
+    public String sentEmail(){
+        try {
+            emailService.sendEmail("ljxccboy1304055@gmail.com", "test", "test");
+            return "邮件发送成功!";
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return "邮件发送失败!";
         }
     }
 }

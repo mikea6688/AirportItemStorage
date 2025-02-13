@@ -27,7 +27,18 @@ spring:
     job-store-type: jdbc
     jdbc:
       initialize-schema: never
-
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 server:
   port: 8080
 mybatis:
