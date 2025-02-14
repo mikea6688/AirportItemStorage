@@ -6,9 +6,6 @@ import lombok.Data;
 import org.code.airportitemstorage.library.OrderLogisticsStatus;
 import org.code.airportitemstorage.library.PaymentMethod;
 
-/**
- * ¶©µ¥ÎïÁ÷
- */
 @Data
 public class OrderLogistics {
     @TableId

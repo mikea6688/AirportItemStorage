@@ -6,9 +6,6 @@ import lombok.Data;
 import org.code.airportitemstorage.library.StorageCabinetSizeType;
 import org.code.airportitemstorage.library.StorageDateType;
 
-/**
- * ¥Ê¥¢πÒ…Ë÷√
- */
 @Data
 public class StorageCabinetSetting {
     @TableId

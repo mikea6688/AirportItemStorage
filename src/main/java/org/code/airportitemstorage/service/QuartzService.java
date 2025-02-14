@@ -1,5 +1,6 @@
 package org.code.airportitemstorage.service;
 
+import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

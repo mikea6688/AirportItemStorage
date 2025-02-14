@@ -7,9 +7,6 @@ import org.code.airportitemstorage.library.StorageCabinetSizeType;
 
 import java.time.LocalDateTime;
 
-/**
- * ´æ´¢¹ñ
- */
 @Data
 public class StorageCabinet {
     @TableId
