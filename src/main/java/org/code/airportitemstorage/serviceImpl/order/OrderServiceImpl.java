@@ -26,7 +26,6 @@ import org.code.airportitemstorage.mapper.users.UserMapper;
 import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.mapper.users.UserVoucherNumberMapper;
 import org.code.airportitemstorage.service.UniqueNumberService;
-import org.code.airportitemstorage.service.job.JobService;
 import org.code.airportitemstorage.service.order.OrderService;
 import org.code.airportitemstorage.service.user.UserService;
 import org.springframework.stereotype.Service;
@@ -52,7 +51,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderLogisticsMapper orderLogisticsMapper;
     private final OrderPaySuccessRecordMapper orderPaySuccessRecordMapper;
     private final UserMapper userMapper;
-    private final JobService jobService;
 
     private static final int OrderThresholdForVIP = 10;
 
