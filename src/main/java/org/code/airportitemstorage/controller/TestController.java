@@ -1,10 +1,10 @@
 package org.code.airportitemstorage.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.code.airportitemstorage.job.MyJob;
+import org.code.airportitemstorage.service.job.MyJob;
 import org.code.airportitemstorage.service.QuartzService;
 import org.code.airportitemstorage.service.email.IEmailService;
 import org.quartz.JobDetail;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,10 +13,11 @@ import org.quartz.*;
 import java.util.Date;
 
 @RestController
-@RequiredArgsConstructor
 public class TestController {
-    private final QuartzService quartzService;
-    private final IEmailService emailService;
+    @Autowired
+    private QuartzService quartzService;
+    @Autowired
+    private IEmailService emailService;
 
     @GetMapping("job")
     public String job() {

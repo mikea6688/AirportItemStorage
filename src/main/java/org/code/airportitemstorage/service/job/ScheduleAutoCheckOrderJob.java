@@ -1,4 +1,4 @@
-package org.code.airportitemstorage.job;
+package org.code.airportitemstorage.service.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,25 +12,31 @@ import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetMapper;
 import org.code.airportitemstorage.mapper.users.UserMapper;
 import org.code.airportitemstorage.service.email.IEmailService;
 import org.quartz.Job;
-import lombok.RequiredArgsConstructor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.code.airportitemstorage.mapper.order.OrderMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+@Service
 @Slf4j
-@RequiredArgsConstructor
 public class ScheduleAutoCheckOrderJob implements Job {
 
-    private final OrderMapper orderMapper;
-    private final OrderExpiredNotifyRecordMapper orderExpiredNotifyRecordMapper;
-    private final IEmailService emailService;
-    private final UserMapper userMapper;
-    private final StorageCabinetMapper storageCabinetMapper;
+    @Autowired
+    private OrderMapper orderMapper;
+    @Autowired
+    private OrderExpiredNotifyRecordMapper orderExpiredNotifyRecordMapper;
+    @Autowired
+    private IEmailService emailService;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private StorageCabinetMapper storageCabinetMapper;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {

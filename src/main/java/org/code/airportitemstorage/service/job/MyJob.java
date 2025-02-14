@@ -1,4 +1,4 @@
-package org.code.airportitemstorage.job;
+package org.code.airportitemstorage.service.job;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

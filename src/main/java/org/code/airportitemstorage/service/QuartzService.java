@@ -1,16 +1,14 @@
 package org.code.airportitemstorage.service;
 
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QuartzService {
 
-    private final Scheduler scheduler;
-
-    public QuartzService(Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
+    @Autowired
+    private Scheduler scheduler;
 
     public void scheduleJob(JobDetail jobDetail, Trigger trigger){
         try {
