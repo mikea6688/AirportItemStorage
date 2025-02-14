@@ -14,7 +14,7 @@ public interface UserService {
 
     UserLoginResponse LoginUser(String username, String password) throws Exception;
 
-    int RegisterUser(UserForRegisterDto user);
+    int RegisterUser(UserForRegisterDto user) throws Exception;
 
     GetAllUserResponse GetAllUser(GetAllUserRequest request);
 

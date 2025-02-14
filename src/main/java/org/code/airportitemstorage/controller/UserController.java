@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PostMapping("register")
-    public int register(@RequestBody UserForRegisterDto user) {
+    public int register(@RequestBody UserForRegisterDto user) throws Exception {
         return userService.RegisterUser(user);
     }
 

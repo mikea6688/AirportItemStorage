@@ -26,7 +26,7 @@ spring:
   quartz:
     job-store-type: jdbc
     jdbc:
-      initialize-schema: never
+      initialize-schema: always
   mail:
     host: smtp.qq.com
     port: 587
@@ -54,3 +54,15 @@ aliyun:
     accessKeySecret:
     bucketName:
 
+custom-quartz:
+  jobs:
+    - name: ScheduleAutoCheckOrderForEmailJob
+      group: emailJob
+      cron: "0 */5 * * * ?"
+      jobData:
+        enableOrderCheckForEmail: true
+    - name: ScheduleAutoHandleExpiredOrderJob
+      group: expiredOrderJob
+      cron: "0 */10 * * * ?"
+      jobData:
+        enableExpiredOrder: true

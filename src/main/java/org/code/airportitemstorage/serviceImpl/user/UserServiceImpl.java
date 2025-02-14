@@ -25,6 +25,7 @@ import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.mapper.users.UserVoucherNumberMapper;
 import org.code.airportitemstorage.service.OssService;
 import org.code.airportitemstorage.service.user.UserService;
+import org.code.airportitemstorage.util.EmailValidator;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -92,8 +93,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public int RegisterUser(UserForRegisterDto userForRegisterDto) {
+    public int RegisterUser(UserForRegisterDto userForRegisterDto) throws Exception {
         if (userForRegisterDto == null)return 0;
+
+        if(!EmailValidator.isValidEmail(userForRegisterDto.email))
+            throw new Exception("Please enter the correct email.");
 
         var user = new User(userForRegisterDto);
         if(userMapper.insert(user) != 1) return 0;

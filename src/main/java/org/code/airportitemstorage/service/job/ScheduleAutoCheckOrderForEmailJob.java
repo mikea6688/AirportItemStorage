@@ -1,6 +1,7 @@
 package org.code.airportitemstorage.service.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.code.airportitemstorage.library.OrderStorageStatus;
 import org.code.airportitemstorage.library.entity.orders.Order;
@@ -25,22 +26,17 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ScheduleAutoCheckOrderJob implements Job {
+@RequiredArgsConstructor
+public class ScheduleAutoCheckOrderForEmailJob implements Job {
 
-    @Autowired
-    private OrderMapper orderMapper;
-    @Autowired
-    private OrderExpiredNotifyRecordMapper orderExpiredNotifyRecordMapper;
-    @Autowired
-    private IEmailService emailService;
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private StorageCabinetMapper storageCabinetMapper;
+    private final UserMapper userMapper;
+    private final OrderMapper orderMapper;
+    private final IEmailService emailService;
+    private final StorageCabinetMapper storageCabinetMapper;
+    private final OrderExpiredNotifyRecordMapper orderExpiredNotifyRecordMapper;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        log.info("Job executed at: {}", LocalDateTime.now());
         var queryOrderWrapper = new QueryWrapper<Order>();
         queryOrderWrapper.eq("storage_status", OrderStorageStatus.Using);
 
@@ -90,7 +86,7 @@ public class ScheduleAutoCheckOrderJob implements Job {
                     orderExpiredNotifyRecordMapper.insert(record);
                 }
                 catch (Exception e) {
-                    throw new JobExecutionException(e);
+                    log.error("Fail to send email.{}", e.getMessage());
                 }
             }
         }
