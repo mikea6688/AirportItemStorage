@@ -28,6 +28,7 @@ import org.code.airportitemstorage.service.user.UserService;
 import org.code.airportitemstorage.util.EmailValidator;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -86,6 +87,8 @@ public class UserServiceImpl implements UserService{
 
         if(user == null)throw new Exception("Please enter the correct username and password.");
 
+        if(user.getRoleType() != RoleType.Admin) throw new Exception("The current user has no permission to login backend.");
+
         response.user = new UserDto(user);
         response.token = UUID.randomUUID().toString();
 
@@ -110,7 +113,7 @@ public class UserServiceImpl implements UserService{
         var response = new GetAllUserResponse();
         List<UserDto> userList = new ArrayList<>();
 
-        var page = new Page<User>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<User>(request.pageIndex, request.pageSize);
 
         var queryUserWrapper = new QueryWrapper<User>();
 
@@ -139,8 +142,6 @@ public class UserServiceImpl implements UserService{
             UserDto userDto = new UserDto(user);
 
             userDto.point = userPoint == null ? 0 : userPoint.getPoint();
-            //TODO:
-            userDto.isStored = false;
 
             EnrichUserStorageInfo(userDto);
 
@@ -187,7 +188,7 @@ public class UserServiceImpl implements UserService{
         var response = new GetUserCommentsResponse();
         var userComments = new ArrayList<UserCommentDto>();
 
-        var page = new Page<UserComment>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<UserComment>(request.pageIndex, request.pageSize);
 
         var queryUserCommentWrapper = new QueryWrapper<UserComment>();
         if(request.id > 0){

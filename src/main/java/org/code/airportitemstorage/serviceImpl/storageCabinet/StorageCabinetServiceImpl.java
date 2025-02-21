@@ -67,7 +67,7 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
     @Override
     public GetStorageCabinetsResponse GetStorageCabinetList(GetStorageCabinetsRequest request) {
         Page<StorageCabinet> storageCabinetPage = storageCabinetMapper.selectPage(
-                new Page<>((request.pageIndex - 1) * request.pageSize, request.pageSize),
+                new Page<>(request.pageIndex, request.pageSize),
                 buildQueryWrapper(request)
         );
 

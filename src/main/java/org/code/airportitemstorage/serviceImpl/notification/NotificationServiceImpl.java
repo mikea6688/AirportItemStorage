@@ -85,7 +85,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         // 分页查询
-        var page = new Page<Notification>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<Notification>(request.pageIndex, request.pageSize);
         Page<Notification> notificationPage = notificationMapper.selectPage(page, queryWrapper);
 
         notificationPage.getRecords().forEach(notification ->

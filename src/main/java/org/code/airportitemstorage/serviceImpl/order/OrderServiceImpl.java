@@ -121,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
 
         ArrayList<UserOrderDto> orderDtoList = new ArrayList<>();
 
-        var page = new Page<Order>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<Order>(request.pageIndex, request.pageSize);
 
         var queryOrderWrapper = new QueryWrapper<Order>();
         queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false);
@@ -275,7 +275,7 @@ public class OrderServiceImpl implements OrderService {
 
         ArrayList<OrderLogisticsDto> orderLogisticsList = new ArrayList<>();
 
-        var page = new Page<OrderLogistics>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<OrderLogistics>(request.pageIndex, request.pageSize);
 
         var queryWrapper = new QueryWrapper<OrderLogistics>();
         queryWrapper.eq("user_id", user.getId());
@@ -315,7 +315,7 @@ public class OrderServiceImpl implements OrderService {
     public GetAllOrderResponse GetAllOrder(GetAllOrderRequest request) {
         ArrayList<UserOrderDto> orderDtoList = new ArrayList<>();
 
-        var page = new Page<Order>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<Order>(request.pageIndex, request.pageSize);
 
         List<Order> orderList = orderMapper.selectList(null);
 
@@ -396,7 +396,7 @@ public class OrderServiceImpl implements OrderService {
     public GetAllOrderLogisticsListResponse GetAllOrderLogisticsList(GetAllOrderLogisticsListRequest request) {
         ArrayList<OrderLogisticsDto> orderLogisticsList = new ArrayList<>();
 
-        var page = new Page<OrderLogistics>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<OrderLogistics>(request.pageIndex, request.pageSize);
 
         var queryOrderLogisticsListWrapper = new QueryWrapper<OrderLogistics>();
 
@@ -458,7 +458,7 @@ public class OrderServiceImpl implements OrderService {
     public GetAllOrderLostItemResponse GetAllOrderLostItemList(GetAllOrderLostItemRequest request) {
         ArrayList<OrderLostItemDto> orderLostItemList = new ArrayList<>();
 
-        var page = new Page<Order>((request.pageIndex - 1) * request.pageSize, request.pageSize);
+        var page = new Page<Order>(request.pageIndex, request.pageSize);
 
         var queryOrderWrapper = new QueryWrapper<Order>();
         queryOrderWrapper.eq("is_lost_item", true);
