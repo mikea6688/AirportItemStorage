@@ -123,8 +123,13 @@ public class OrderServiceImpl implements OrderService {
 
         var page = new Page<Order>(request.pageIndex, request.pageSize);
 
+        var queryOrderLogisticsWrapper = new QueryWrapper<OrderLogistics>();
+        queryOrderLogisticsWrapper.eq("user_id", user.getId());
+        List<Long> excludedOrderIds = orderLogisticsMapper.selectList(queryOrderLogisticsWrapper).stream().map(OrderLogistics::getOrderId).toList();
+
+
         var queryOrderWrapper = new QueryWrapper<Order>();
-        queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false);
+        queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false).notIn("id", excludedOrderIds);
 
         List<Order> orderList = orderMapper.selectList(queryOrderWrapper);
 
