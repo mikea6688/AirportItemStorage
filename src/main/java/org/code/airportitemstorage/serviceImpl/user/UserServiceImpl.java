@@ -78,6 +78,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserLoginResponse LoginUser(String username, String password) throws Exception {
+        String sourceSystem = _httpServletRequest.getHeader("Source_System");
         UserLoginResponse response = new UserLoginResponse();
 
         var queryWrapper = new QueryWrapper<User>();
@@ -87,7 +88,8 @@ public class UserServiceImpl implements UserService{
 
         if(user == null)throw new Exception("Please enter the correct username and password.");
 
-        if(user.getRoleType() != RoleType.Admin) throw new Exception("The current user has no permission to login backend.");
+        //如果是后台登录，检验用户是否是管理员
+        if(sourceSystem.equals(SourceSystem.Backstage.toString()) && user.getRoleType() != RoleType.Admin) throw new Exception("The current user has no permission to login backend.");
 
         response.user = new UserDto(user);
         response.token = UUID.randomUUID().toString();
@@ -288,6 +290,7 @@ public class UserServiceImpl implements UserService{
         var queryWrapper = new QueryWrapper<UserVoucherNumber>();
         queryWrapper.eq("user_id", user.getId()).eq("voucher_number", voucher);
         UserVoucherNumber userVoucherNumber = userVoucherNumberMapper.selectOne(queryWrapper);
+
 
         return userVoucherNumber != null;
     }

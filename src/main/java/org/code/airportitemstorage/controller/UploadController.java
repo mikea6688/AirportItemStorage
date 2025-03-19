@@ -5,7 +5,7 @@ import org.code.airportitemstorage.service.OssService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+//上传图片
 @RestController
 @RequestMapping("api/upload")
 public class UploadController {

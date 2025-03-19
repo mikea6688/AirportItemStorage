@@ -7,7 +7,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
-
+//允许跨域的配置
 @Configuration
 public class CorsFilterConfig {
     @Bean

@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ *  第三方的图片存储工具
+ */
+
 @Configuration
 public class OssConfig {
     @Value("${aliyun.oss.endpoint}")

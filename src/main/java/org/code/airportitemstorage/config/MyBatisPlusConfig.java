@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+//对数据库进行分页的拦截器
+
 @Configuration
 public class MyBatisPlusConfig {
     // 分页拦截器

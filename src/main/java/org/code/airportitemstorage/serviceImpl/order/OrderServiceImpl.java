@@ -129,7 +129,11 @@ public class OrderServiceImpl implements OrderService {
 
 
         var queryOrderWrapper = new QueryWrapper<Order>();
-        queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false).notIn("id", excludedOrderIds);
+        queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false);
+
+        if(!excludedOrderIds.isEmpty()){
+            queryOrderWrapper.notIn("id", excludedOrderIds);
+        }
 
         List<Order> orderList = orderMapper.selectList(queryOrderWrapper);
 

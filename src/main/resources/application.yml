@@ -30,8 +30,8 @@ spring:
   mail:
     host: smtp.qq.com
     port: 587
-    username:
-    password:
+    username: 123@qq.com
+    password: wsoxwirigzendgai
     properties:
       mail:
         smtp:
@@ -52,7 +52,7 @@ aliyun:
     endpoint:
     accessKeyId:
     accessKeySecret:
-    bucketName:
+    bucketName: 
 
 custom-quartz:
   jobs:
