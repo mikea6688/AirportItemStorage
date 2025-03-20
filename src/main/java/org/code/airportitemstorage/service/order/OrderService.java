@@ -1,5 +1,6 @@
 package org.code.airportitemstorage.service.order;
 
+import org.code.airportitemstorage.library.StorageCabinetSizeType;
 import org.code.airportitemstorage.library.entity.orders.Order;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinetSetting;
 import org.code.airportitemstorage.library.request.order.*;
@@ -28,4 +29,6 @@ public interface OrderService  {
     int DeleteOrderLostItem(long id) throws Exception;
 
     int OperateLogisticsOrder(OperateLogisticsOrderRequest request) throws Exception;
+
+    float HandleOrderTotalPrice(StorageCabinetSizeType sizeType, Order order, long duration);
 }

@@ -193,6 +193,10 @@ public class OrderServiceImpl implements OrderService {
         User user = userService.CheckUserAuthorization();
         if (user == null) return false;
 
+        if(!CheckPaymentPassword(user.getPassword(), request.getPassword())){
+            throw new Exception("支付密码不正确，请重新输入！");
+        };
+
         var queryUserPointWrapper = new QueryWrapper<UserPoint>();
         queryUserPointWrapper.eq("user_id", user.getId());
 
@@ -230,7 +234,11 @@ public class OrderServiceImpl implements OrderService {
         return true;
     }
 
-    private float HandleOrderTotalPrice(StorageCabinetSizeType sizeType, Order order, long duration) {
+    private boolean CheckPaymentPassword(String userPassword, String inputPassword) {
+        return userPassword.equals(inputPassword);
+    }
+
+    public float HandleOrderTotalPrice(StorageCabinetSizeType sizeType, Order order, long duration) {
         var querySettingWrapper = new QueryWrapper<StorageCabinetSetting>();
         querySettingWrapper.eq("size_type", sizeType);
 

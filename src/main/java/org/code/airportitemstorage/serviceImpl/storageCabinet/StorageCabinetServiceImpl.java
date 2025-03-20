@@ -13,11 +13,13 @@ import org.code.airportitemstorage.library.entity.orders.OrderLogistics;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinet;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinetSetting;
 import org.code.airportitemstorage.library.entity.user.User;
+import org.code.airportitemstorage.library.entity.user.UserPoint;
 import org.code.airportitemstorage.library.request.storage.*;
 import org.code.airportitemstorage.mapper.order.OrderLogisticsMapper;
 import org.code.airportitemstorage.mapper.order.OrderMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetSettingMapper;
+import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.service.order.OrderService;
 import org.code.airportitemstorage.service.storageCabinet.StorageCabinetService;
 import org.code.airportitemstorage.service.user.UserService;
@@ -39,6 +41,7 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
     private final OrderMapper orderMapper;
     private final OrderService orderService;
     private final OrderLogisticsMapper orderLogisticsMapper;
+    private final UserPointMapper userPointMapper;
 
     @Override
     public GetStorageCabinetSettingResponse GetAllStorageCabinetSetting() {
@@ -134,9 +137,21 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
 
         switch (request.operateType){
             case Discard -> {
+                var time = Duration.between(LocalDateTime.now(), order.getStorageTime()).toSeconds();
+
+                float totalPrice = orderService.HandleOrderTotalPrice(storageCabinet.getSizeType(), order, time);
+
+                // 更新订单信息
+                order.setPrice(totalPrice);
                 order.setStorageStatus(OrderStorageStatus.Discarded);
-                order.setTotalStoredDuration(Duration.between(LocalDateTime.now(), order.getStorageTime()).toSeconds());
+                order.setTotalStoredDuration(time);
                 storageCabinet.setRequiredClean(true);
+
+                // 扣除积分
+                var queryUserPointWrapper = new QueryWrapper<UserPoint>();
+                queryUserPointWrapper.eq("user_id", user.getId());
+                UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
+                userPoint.setPoint(userPoint.getPoint() - totalPrice);
 
                 orderMapper.updateById(order);
                 storageCabinetMapper.updateById(storageCabinet);
