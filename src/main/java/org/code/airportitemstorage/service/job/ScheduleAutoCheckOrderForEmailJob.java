@@ -56,6 +56,8 @@ public class ScheduleAutoCheckOrderForEmailJob implements Job {
                 .selectList(new QueryWrapper<OrderExpiredNotifyRecord>().in("order_id", orderIds));
 
         var currentDate = LocalDateTime.now();
+        //暂不使用
+        if(!orders.isEmpty())return;
 
         for (Order order : orders) {
             OrderExpiredNotifyRecord expiredNotifyRecord = expiredNotifyRecords.stream()

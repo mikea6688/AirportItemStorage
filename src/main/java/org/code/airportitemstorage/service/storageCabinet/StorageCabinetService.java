@@ -16,4 +16,12 @@ public interface StorageCabinetService {
     int UpdateStorageCabinetSetting(UpdateStorageCabinetSettingRequest request);
 
     OperateUserStorageCabinetResponse OperateUserStorageCabinet(OperateUserStorageCabinetRequest request) throws Exception;
+
+    int AddStorageCategory(AddStorageCategoryRequest request);
+
+    int deleteStorageCategoryById(long id);
+
+    int UpdateStorageCategory(UpdateStorageCategoryRequest request);
+
+    GetStorageCategoriesResponse GetStorageCategories(GetStorageCategoriesRequest request);
 }

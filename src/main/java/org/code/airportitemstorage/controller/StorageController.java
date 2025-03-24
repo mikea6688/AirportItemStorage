@@ -46,4 +46,24 @@ public class StorageController {
     public OperateUserStorageCabinetResponse operateUserStorageCabinet(@RequestBody OperateUserStorageCabinetRequest request) throws Exception {
         return storageCabinetService.OperateUserStorageCabinet(request);
     }
+
+    @PostMapping("category/add")
+    public int addStorageCategory(@RequestBody AddStorageCategoryRequest request) {
+        return storageCabinetService.AddStorageCategory(request);
+    }
+
+    @PostMapping("category/delete")
+    public int deleteStorageCategory(@RequestBody long id) {
+        return storageCabinetService.deleteStorageCategoryById(id);
+    }
+
+    @PostMapping("category/update")
+    public int updateStorageCategory(@RequestBody UpdateStorageCategoryRequest request) {
+        return storageCabinetService.UpdateStorageCategory(request);
+    }
+
+    @GetMapping("category/list")
+    public GetStorageCategoriesResponse getStorageCategories(GetStorageCategoriesRequest request) {
+        return storageCabinetService.GetStorageCategories(request);
+    }
 }

@@ -8,10 +8,12 @@ import org.code.airportitemstorage.library.OrderStorageStatus;
 import org.code.airportitemstorage.library.RoleType;
 import org.code.airportitemstorage.library.dto.storage.StorageCabinetDto;
 import org.code.airportitemstorage.library.dto.storage.StorageCabinetSettingDto;
+import org.code.airportitemstorage.library.dto.storage.StorageCategoryDto;
 import org.code.airportitemstorage.library.entity.orders.Order;
 import org.code.airportitemstorage.library.entity.orders.OrderLogistics;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinet;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinetSetting;
+import org.code.airportitemstorage.library.entity.storageCabinet.StorageCategory;
 import org.code.airportitemstorage.library.entity.user.User;
 import org.code.airportitemstorage.library.entity.user.UserPoint;
 import org.code.airportitemstorage.library.request.storage.*;
@@ -19,6 +21,7 @@ import org.code.airportitemstorage.mapper.order.OrderLogisticsMapper;
 import org.code.airportitemstorage.mapper.order.OrderMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetSettingMapper;
+import org.code.airportitemstorage.mapper.storageCabinet.StorageCategoryMapper;
 import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.service.order.OrderService;
 import org.code.airportitemstorage.service.storageCabinet.StorageCabinetService;
@@ -42,6 +45,7 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
     private final OrderService orderService;
     private final OrderLogisticsMapper orderLogisticsMapper;
     private final UserPointMapper userPointMapper;
+    private final StorageCategoryMapper storageCategoryMapper;
 
     @Override
     public GetStorageCabinetSettingResponse GetAllStorageCabinetSetting() {
@@ -184,6 +188,55 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
         }
 
         return response;
+    }
+
+    @Override
+    public int AddStorageCategory(AddStorageCategoryRequest request) {
+        if(request.getName().isEmpty() || userService.CheckUserAuthorization() == null) return 0;
+
+        StorageCategory storageCategory = new StorageCategory();
+        storageCategory.setCategoryName(request.getName());
+        storageCategory.setCreatedDate(LocalDateTime.now());
+
+        return storageCategoryMapper.insert(storageCategory);
+    }
+
+    @Override
+    public int deleteStorageCategoryById(long id) {
+        StorageCategory storageCategory = storageCategoryMapper.selectById(id);
+
+        if (storageCategory == null) return 0;
+
+        return storageCategoryMapper.deleteById(id);
+    }
+
+    @Override
+    public int UpdateStorageCategory(UpdateStorageCategoryRequest request) {
+        StorageCategory storageCategory = storageCategoryMapper.selectById(request.getId());
+
+        if (storageCategory == null) return 0;
+
+        storageCategory.setCategoryName(request.getName());
+
+        return storageCategoryMapper.updateById(storageCategory);
+    }
+
+    @Override
+    public GetStorageCategoriesResponse GetStorageCategories(GetStorageCategoriesRequest request) {
+        QueryWrapper<StorageCategory> queryWrapper = new QueryWrapper<>();
+
+        Page<StorageCategory> storageCategoryPage = storageCategoryMapper.selectPage(new Page<>(request.pageIndex, request.pageSize), null);
+
+        List<StorageCategoryDto> storageCategories = storageCategoryPage.getRecords()
+                .stream()
+                .map(item -> new StorageCategoryDto(
+                        item.getId(),
+                        item.getCategoryName(),
+                        item.getCreatedDate()
+                ))
+                .collect(Collectors.toList());
+
+        return new GetStorageCategoriesResponse(storageCategories, storageCategoryPage.getTotal());
     }
 
     private static OrderLogistics BuildOrderLogistics(OperateUserStorageCabinetRequest request, User user) {

@@ -147,3 +147,9 @@ CREATE TABLE if not exists `order_expired_notify_record` (
    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+create table if not exists `storage_category` (
+    `id` bigint not null auto_increment primary key comment '主键ID',
+    `category_name` varchar(255)  not null,
+    `created_date`  datetime      not null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
