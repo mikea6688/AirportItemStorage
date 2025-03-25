@@ -24,4 +24,6 @@ public class UserOrderDto {
     public boolean isPayment;
 
     public OrderStorageStatus status;
+
+    public String categoryName;
 }

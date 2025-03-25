@@ -7,4 +7,6 @@ public class GetStorageCategoriesRequest {
     public long pageIndex = 1;
 
     public long pageSize = 15;
+
+    public boolean isAll;
 }

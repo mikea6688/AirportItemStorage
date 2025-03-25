@@ -13,6 +13,7 @@ import org.code.airportitemstorage.library.entity.orders.OrderLogistics;
 import org.code.airportitemstorage.library.entity.orders.OrderPaySuccessRecord;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinet;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinetSetting;
+import org.code.airportitemstorage.library.entity.storageCabinet.StorageCategory;
 import org.code.airportitemstorage.library.entity.storageCabinet.UserVoucherNumber;
 import org.code.airportitemstorage.library.entity.user.User;
 import org.code.airportitemstorage.library.entity.user.UserPoint;
@@ -22,6 +23,7 @@ import org.code.airportitemstorage.mapper.order.OrderMapper;
 import org.code.airportitemstorage.mapper.order.OrderPaySuccessRecordMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetSettingMapper;
+import org.code.airportitemstorage.mapper.storageCabinet.StorageCategoryMapper;
 import org.code.airportitemstorage.mapper.users.UserMapper;
 import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.mapper.users.UserVoucherNumberMapper;
@@ -53,6 +55,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserMapper userMapper;
 
     private static final int OrderThresholdForVIP = 10;
+    private final StorageCategoryMapper storageCategoryMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class) // 事务管理，出现异常自动回滚
@@ -91,6 +94,7 @@ public class OrderServiceImpl implements OrderService {
             order.setMonthCount(request.getMonthCount());
             order.setDateType(request.getDateType());
             order.setLostItem(request.isLostItem());
+            order.setCategoryId(request.getCategoryId());
             if(orderMapper.insert(order) == 0)throw new Exception("Order already exists.");
 
             if(userVoucherNumberMapper.insert(userVoucherNumber) == 0)throw new Exception("Voucher number already exists.");
@@ -157,6 +161,9 @@ public class OrderServiceImpl implements OrderService {
 
         List<StorageCabinet> storageCabinets = storageCabinetMapper.selectBatchIds(cabinetIds);
 
+        List<Long> categoryIds = orderList.stream().map(Order::getCategoryId).toList();
+        List<StorageCategory> storageCategories = storageCategoryMapper.selectBatchIds(categoryIds);
+
         for(Order order : orderPage.getRecords()){
             StorageCabinet storageCabinet = storageCabinets.stream().filter(x -> x.getId() == order.getStorageCabinetId()).findFirst().orElse(null);
             if(storageCabinet == null) continue;
@@ -168,6 +175,8 @@ public class OrderServiceImpl implements OrderService {
 
             var storagePrice = order.getPrice() == 0 ? order.getEstimatedPrice() : order.getPrice();
 
+            var category = storageCategories.stream().filter(x -> x.getId() == order.getCategoryId()).findFirst().orElse(null);
+
             UserOrderDto dto = new UserOrderDto();
             dto.setId(order.getId());
             dto.setNum(storageCabinet.getNum());
@@ -176,6 +185,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setStorageDate(order.getStorageTime());
             dto.setStoredDuration(storedDuration);
             dto.setStoragePrice(storagePrice);
+            dto.setCategoryName(category == null? "其他" : category.getCategoryName());
             orderDtoList.add(dto);
         }
 

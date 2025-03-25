@@ -21,4 +21,6 @@ public class AddOrderRequest {
     public float estimatedPrice;
 
     public boolean isLostItem;
+
+    public long categoryId;
 }

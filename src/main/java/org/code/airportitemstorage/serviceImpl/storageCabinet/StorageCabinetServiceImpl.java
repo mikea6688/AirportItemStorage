@@ -225,7 +225,19 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
     public GetStorageCategoriesResponse GetStorageCategories(GetStorageCategoriesRequest request) {
         QueryWrapper<StorageCategory> queryWrapper = new QueryWrapper<>();
 
-        Page<StorageCategory> storageCategoryPage = storageCategoryMapper.selectPage(new Page<>(request.pageIndex, request.pageSize), null);
+        // 如果 isAll 为 true，则查询所有数据，否则分页查询
+        Page<StorageCategory> storageCategoryPage;
+        if (request.isAll()) {
+            List<StorageCategory> allRecords = storageCategoryMapper.selectList(null);
+            storageCategoryPage = new Page<>();
+            storageCategoryPage.setRecords(allRecords);
+            storageCategoryPage.setTotal(allRecords.size());
+        } else {
+            storageCategoryPage = storageCategoryMapper.selectPage(
+                    new Page<>(request.getPageIndex(), request.getPageSize()),
+                    null
+            );
+        }
 
         List<StorageCategoryDto> storageCategories = storageCategoryPage.getRecords()
                 .stream()

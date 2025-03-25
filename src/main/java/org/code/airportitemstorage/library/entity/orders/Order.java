@@ -59,4 +59,7 @@ public class Order {
 
     @TableField("total_stored_duration")
     private long totalStoredDuration;
+
+    @TableField("category_id")
+    private long categoryId;
 }
