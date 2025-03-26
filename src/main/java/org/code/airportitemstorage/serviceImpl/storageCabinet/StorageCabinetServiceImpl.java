@@ -139,27 +139,10 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
 
         StorageCabinet storageCabinet = storageCabinetMapper.selectById(order.getStorageCabinetId());
 
+        var totalDate = Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
+
         switch (request.operateType){
-            case Discard -> {
-                var time = Duration.between(LocalDateTime.now(), order.getStorageTime()).toSeconds();
-
-                float totalPrice = orderService.HandleOrderTotalPrice(storageCabinet.getSizeType(), order, time);
-
-                // 更新订单信息
-                order.setPrice(totalPrice);
-                order.setStorageStatus(OrderStorageStatus.Discarded);
-                order.setTotalStoredDuration(time);
-                storageCabinet.setRequiredClean(true);
-
-                // 扣除积分
-                var queryUserPointWrapper = new QueryWrapper<UserPoint>();
-                queryUserPointWrapper.eq("user_id", user.getId());
-                UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
-                userPoint.setPoint(userPoint.getPoint() - totalPrice);
-
-                orderMapper.updateById(order);
-                storageCabinetMapper.updateById(storageCabinet);
-            }
+            case Discard -> HandleDiscardedOrder(order, storageCabinet, user, totalDate);
             case TakeOut -> {
                 var storageDuration = Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
 
@@ -291,5 +274,24 @@ public class StorageCabinetServiceImpl implements StorageCabinetService {
         }
 
         return queryWrapper;
+    }
+
+    public void HandleDiscardedOrder(Order order, StorageCabinet storageCabinet, User user, long totalDate){
+        float totalPrice = orderService.HandleOrderTotalPrice(storageCabinet.getSizeType(), order, totalDate);
+
+        // 更新订单信息
+        order.setPrice(totalPrice);
+        order.setStorageStatus(OrderStorageStatus.Discarded);
+        order.setTotalStoredDuration(totalDate);
+        storageCabinet.setRequiredClean(true);
+
+        // 扣除积分
+        var queryUserPointWrapper = new QueryWrapper<UserPoint>();
+        queryUserPointWrapper.eq("user_id", user.getId());
+        UserPoint userPoint = userPointMapper.selectOne(queryUserPointWrapper);
+        userPoint.setPoint(userPoint.getPoint() - totalPrice);
+
+        orderMapper.updateById(order);
+        storageCabinetMapper.updateById(storageCabinet);
     }
 }

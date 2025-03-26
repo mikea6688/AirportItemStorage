@@ -1,5 +1,8 @@
 package org.code.airportitemstorage.service.storageCabinet;
 
+import org.code.airportitemstorage.library.entity.orders.Order;
+import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinet;
+import org.code.airportitemstorage.library.entity.user.User;
 import org.code.airportitemstorage.library.request.storage.*;
 
 public interface StorageCabinetService {
@@ -24,4 +27,6 @@ public interface StorageCabinetService {
     int UpdateStorageCategory(UpdateStorageCategoryRequest request);
 
     GetStorageCategoriesResponse GetStorageCategories(GetStorageCategoriesRequest request);
+
+    void HandleDiscardedOrder(Order order, StorageCabinet storageCabinet, User user, long totalDate);
 }

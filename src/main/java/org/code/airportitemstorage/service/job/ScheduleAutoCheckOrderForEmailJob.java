@@ -56,8 +56,6 @@ public class ScheduleAutoCheckOrderForEmailJob implements Job {
                 .selectList(new QueryWrapper<OrderExpiredNotifyRecord>().in("order_id", orderIds));
 
         var currentDate = LocalDateTime.now();
-        //暂不使用
-        if(!orders.isEmpty())return;
 
         for (Order order : orders) {
             OrderExpiredNotifyRecord expiredNotifyRecord = expiredNotifyRecords.stream()
@@ -71,7 +69,7 @@ public class ScheduleAutoCheckOrderForEmailJob implements Job {
 
             if(user == null || storageCabinet == null) continue;
 
-            LocalDateTime endDate = CalculateOrderEndDate(order);
+            LocalDateTime endDate = JobEngine.CalculateOrderEndDate(order);
 
             if(Duration.between(currentDate, endDate).toDays() <= 3 &&
                     (expiredNotifyRecord == null ||
@@ -92,19 +90,5 @@ public class ScheduleAutoCheckOrderForEmailJob implements Job {
                 }
             }
         }
-    }
-
-    private LocalDateTime CalculateOrderEndDate(Order order) {
-        if (order == null)return null;
-
-        var endDate = order.getStorageTime();
-
-        if(order.isUseMemberRenewalService()) endDate.plusDays(3);
-
-        return switch (order.getDateType()){
-            case ThreeDays -> endDate.plusDays(3);
-            case OneWeek -> endDate.plusWeeks(1);
-            case OneMonth -> endDate.plusMonths(1);
-        };
     }
 }

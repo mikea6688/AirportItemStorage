@@ -58,7 +58,7 @@ custom-quartz:
   jobs:
     - name: ScheduleAutoCheckOrderForEmailJob
       group: emailJob
-      cron: "0 */5 * * * ?"
+      cron: "0 1 12 * * ?"
       jobData:
         enableOrderCheckForEmail: true
     - name: ScheduleAutoHandleExpiredOrderJob
