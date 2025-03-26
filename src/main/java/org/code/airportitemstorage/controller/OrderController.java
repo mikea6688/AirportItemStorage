@@ -1,5 +1,6 @@
 package org.code.airportitemstorage.controller;
 
+import org.code.airportitemstorage.library.dto.order.RenewalUserOrderRequest;
 import org.code.airportitemstorage.library.request.order.*;
 import org.code.airportitemstorage.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,5 +62,10 @@ public class OrderController {
     @GetMapping("statistical")
     public GetOrderStatisticalDataResponse getOrderStatistical(GetOrderStatisticalDataRequest request){
         return orderService.GetOrderStatistical(request);
+    }
+    // 续期
+    @PostMapping("renewal")
+    public int RenewalUserOrder(@RequestBody RenewalUserOrderRequest request) throws Exception {
+        return orderService.RenewalUserOrder(request);
     }
 }

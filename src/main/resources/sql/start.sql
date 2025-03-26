@@ -153,3 +153,5 @@ create table if not exists `storage_category` (
     `created_date`  datetime      not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+# alter table mydb.`order`
+#     add column is_renewal tinyint(1) not null default 0;

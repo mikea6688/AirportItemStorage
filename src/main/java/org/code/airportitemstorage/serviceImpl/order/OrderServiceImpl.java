@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.code.airportitemstorage.library.*;
-import org.code.airportitemstorage.library.dto.order.OrderLogisticsDto;
-import org.code.airportitemstorage.library.dto.order.OrderLostItemDto;
-import org.code.airportitemstorage.library.dto.order.OrderStatisticalDto;
-import org.code.airportitemstorage.library.dto.order.UserOrderDto;
+import org.code.airportitemstorage.library.dto.order.*;
 import org.code.airportitemstorage.library.entity.orders.Order;
 import org.code.airportitemstorage.library.entity.orders.OrderLogistics;
 import org.code.airportitemstorage.library.entity.orders.OrderPaySuccessRecord;
@@ -187,6 +184,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setStoredDuration(storedDuration);
             dto.setStoragePrice(storagePrice);
             dto.setCategoryName(category == null? "其他" : category.getCategoryName());
+            dto.setRenewal(order.isRenewal());
             orderDtoList.add(dto);
         }
 
@@ -245,6 +243,21 @@ public class OrderServiceImpl implements OrderService {
         return true;
     }
 
+    @Override
+    public int RenewalUserOrder(RenewalUserOrderRequest request) {
+        User user = userService.CheckUserAuthorization();
+
+        if (user == null) return 0;
+
+        var order = orderMapper.selectById(request.getOrderId());
+
+        if(order == null)return 0;
+
+        order.setRenewal(true);
+
+        return orderMapper.updateById(order);
+    }
+
     private boolean CheckPaymentPassword(String userPassword, String inputPassword) {
         return userPassword.equals(inputPassword);
     }
@@ -277,7 +290,7 @@ public class OrderServiceImpl implements OrderService {
         float estimatedPrice = order.getEstimatedPrice();
 
         // 预期的时间
-        long estimatedTime = getEstimatedTime(order.getDateType());
+        long estimatedTime = getEstimatedTime(order.getDateType(), order.getMonthCount(), order.isRenewal());
 
         // 如果已过的时间大于预期时间，则计算差额
         if (storageDuration > estimatedTime) {
@@ -414,6 +427,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setUsername(user.getAccountName());
             dto.setPayment(orderPaySuccessRecord != null);
             dto.setStorageTimeout(isTimeOut);
+            dto.setRenewal(order.isRenewal());
             orderDtoList.add(dto);
         }
 
@@ -660,12 +674,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // 根据日期类型获取预期时间（秒）
-    private long getEstimatedTime(StorageDateType dateType) {
-        return switch (dateType) {
-            case ThreeDays -> Duration.ofDays(3).toSeconds();
-            case OneWeek -> Duration.ofDays(7).toSeconds();
-            case OneMonth -> Duration.ofDays(30).toSeconds();
+    private long getEstimatedTime(StorageDateType dateType, long monthCount, boolean isRenewal) {
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        LocalDateTime estimatedTime = currentTime;
+
+        estimatedTime = switch (dateType) {
+            case ThreeDays -> estimatedTime.plusDays(3);
+            case OneWeek -> estimatedTime.plusWeeks(1);
+            case OneMonth -> estimatedTime.plusMonths(monthCount);
         };
+
+        if(isRenewal)
+            estimatedTime = estimatedTime.plusWeeks(1);
+
+        // estimatedTime减去当前时间currentTime返回秒数
+        return Duration.between(currentTime, estimatedTime).getSeconds();
     }
 
     // 计算已过天数

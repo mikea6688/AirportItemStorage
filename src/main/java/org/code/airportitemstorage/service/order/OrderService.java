@@ -1,6 +1,7 @@
 package org.code.airportitemstorage.service.order;
 
 import org.code.airportitemstorage.library.StorageCabinetSizeType;
+import org.code.airportitemstorage.library.dto.order.RenewalUserOrderRequest;
 import org.code.airportitemstorage.library.entity.orders.Order;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinetSetting;
 import org.code.airportitemstorage.library.request.order.*;
@@ -31,4 +32,6 @@ public interface OrderService  {
     int OperateLogisticsOrder(OperateLogisticsOrderRequest request) throws Exception;
 
     float HandleOrderTotalPrice(StorageCabinetSizeType sizeType, Order order, long duration);
+
+    int RenewalUserOrder(RenewalUserOrderRequest request);
 }

@@ -28,4 +28,6 @@ public class UserOrderDto {
     public String categoryName;
 
     public boolean isStorageTimeout;
+
+    public boolean isRenewal;
 }

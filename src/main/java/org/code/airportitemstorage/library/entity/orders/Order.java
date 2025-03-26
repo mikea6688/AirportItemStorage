@@ -62,4 +62,7 @@ public class Order {
 
     @TableField("category_id")
     private long categoryId;
+
+    @TableField("is_renewal")
+    private boolean isRenewal;
 }

@@ -13,6 +13,8 @@ public class JobEngine {
 
         if(order.isUseMemberRenewalService()) endDate.plusDays(3);
 
+        if(order.isRenewal()) endDate.plusWeeks(1);
+
         return switch (order.getDateType()){
             case ThreeDays -> endDate.plusDays(3);
             case OneWeek -> endDate.plusWeeks(1);
