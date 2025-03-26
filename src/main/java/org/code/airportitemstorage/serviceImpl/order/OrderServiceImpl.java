@@ -28,6 +28,7 @@ import org.code.airportitemstorage.mapper.users.UserMapper;
 import org.code.airportitemstorage.mapper.users.UserPointMapper;
 import org.code.airportitemstorage.mapper.users.UserVoucherNumberMapper;
 import org.code.airportitemstorage.service.UniqueNumberService;
+import org.code.airportitemstorage.service.job.JobEngine;
 import org.code.airportitemstorage.service.order.OrderService;
 import org.code.airportitemstorage.service.user.UserService;
 import org.springframework.stereotype.Service;
@@ -254,7 +255,7 @@ public class OrderServiceImpl implements OrderService {
 
         var storageCabinetSettings = storageCabinetSettingMapper.selectList(querySettingWrapper);
 
-        var storageDuration = duration > 0 ? duration: Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
+        var storageDuration = duration > 0 ? duration : Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds();
 
         return CalculateTotalPrice(order, storageDuration, storageCabinetSettings);
     }
@@ -342,6 +343,8 @@ public class OrderServiceImpl implements OrderService {
     public GetAllOrderResponse GetAllOrder(GetAllOrderRequest request) {
         ArrayList<UserOrderDto> orderDtoList = new ArrayList<>();
 
+        var currentDate = LocalDateTime.now();
+
         var page = new Page<Order>(request.pageIndex, request.pageSize);
 
         List<Order> orderList = orderMapper.selectList(null);
@@ -398,6 +401,8 @@ public class OrderServiceImpl implements OrderService {
 
             var orderPaySuccessRecord = orderPaySuccessRecords.stream().filter(x -> x.getId() == order.getId()).findFirst().orElse(null);
 
+            var isTimeOut = CheckOrderStorageTimeout(order, currentDate);
+
             UserOrderDto dto = new UserOrderDto();
             dto.setId(order.getId());
             dto.setNum(storageCabinet.getNum());
@@ -408,6 +413,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setStoragePrice(order.getPrice() == 0 ? order.getEstimatedPrice() : order.getPrice());
             dto.setUsername(user.getAccountName());
             dto.setPayment(orderPaySuccessRecord != null);
+            dto.setStorageTimeout(isTimeOut);
             orderDtoList.add(dto);
         }
 
@@ -417,6 +423,12 @@ public class OrderServiceImpl implements OrderService {
         response.total = orderPage.getTotal();
 
         return response;
+    }
+
+    private boolean CheckOrderStorageTimeout(Order order, LocalDateTime currentDate) {
+        var endDate = JobEngine.CalculateOrderEndDate(order);
+
+        return order.getStorageStatus() == OrderStorageStatus.Using && currentDate.isAfter(endDate);
     }
 
     @Override
@@ -607,6 +619,7 @@ public class OrderServiceImpl implements OrderService {
 
                     order.setStorageStatus(OrderStorageStatus.TakenOut);
                     order.setPrice(HandleOrderTotalPrice(storageCabinet.getSizeType(), order, 0));
+                    order.setTotalStoredDuration(Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds());
 
                     orderLogistics.setStatus(OrderLogisticsStatus.InTransit);
 
@@ -620,7 +633,8 @@ public class OrderServiceImpl implements OrderService {
                     userPoint.setPoint(userPoint.getPoint() - order.getPrice());
 
                     if(userPointMapper.updateById(userPoint) != 1 ||
-                            orderLogisticsMapper.updateById(orderLogistics) != 1)
+                            orderLogisticsMapper.updateById(orderLogistics) != 1 ||
+                                orderPaySuccessRecordMapper.insert(new OrderPaySuccessRecord(order.getId(), user.getId())) != 1)
                         throw new Exception("Data exception Please try again later！");
                 }
             }

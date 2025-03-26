@@ -26,4 +26,6 @@ public class UserOrderDto {
     public OrderStorageStatus status;
 
     public String categoryName;
+
+    public boolean isStorageTimeout;
 }

@@ -6,8 +6,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.code.airportitemstorage.library.entity.orders.OrderExpiredNotifyRecord;
+import org.code.airportitemstorage.library.entity.orders.OrderPaySuccessRecord;
 import org.code.airportitemstorage.library.entity.storageCabinet.StorageCabinet;
 import org.code.airportitemstorage.library.entity.user.User;
+import org.code.airportitemstorage.mapper.order.OrderPaySuccessRecordMapper;
 import org.code.airportitemstorage.mapper.storageCabinet.StorageCabinetMapper;
 import org.code.airportitemstorage.mapper.users.UserMapper;
 import org.code.airportitemstorage.service.order.OrderService;
@@ -33,6 +35,7 @@ public class ScheduleAutoHandleExpiredOrderJob implements Job {
     private final OrderMapper orderMapper;
     private final StorageCabinetService storageCabinetService;
     private final StorageCabinetMapper storageCabinetMapper;
+    private final OrderPaySuccessRecordMapper orderPaySuccessRecordMapper;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -63,6 +66,7 @@ public class ScheduleAutoHandleExpiredOrderJob implements Job {
                 // 处理过期订单
                 try {
                     storageCabinetService.HandleDiscardedOrder(order, storageCabinet, user, Duration.between(order.getStorageTime(), currentDate).toSeconds());
+                    orderPaySuccessRecordMapper.insert(new OrderPaySuccessRecord(order.getId(), user.getId()));
                     log.info("ScheduleAutoHandleExpiredOrderJob -- Job executed done. OrderId: {}", order.getId());
                 }
                 catch (Exception e) {
