@@ -4,11 +4,13 @@ import lombok.Data;
 
 @Data
 public class GetAllOrderRequest {
-    public String cabinetNumber;
+    private String cabinetNumber;
 
-    public String username;
+    private String username;
 
-    public long pageIndex = 1;
+    private long pageIndex = 1;
 
-    public long pageSize = 15;
+    private long pageSize = 15;
+
+    private Boolean isExpiredOrder;
 }

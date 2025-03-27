@@ -11,14 +11,16 @@ public class JobEngine {
 
         var endDate = order.getStorageTime();
 
-        if(order.isUseMemberRenewalService()) endDate.plusDays(3);
+        if(order.isUseMemberRenewalService()) endDate = endDate.plusDays(3);
 
-        if(order.isRenewal()) endDate.plusWeeks(1);
+        if(order.isRenewal()) endDate = endDate.plusWeeks(1);
 
-        return switch (order.getDateType()){
+        endDate = switch (order.getDateType()){
             case ThreeDays -> endDate.plusDays(3);
             case OneWeek -> endDate.plusWeeks(1);
             case OneMonth -> endDate.plusMonths(1);
         };
+
+        return endDate;
     }
 }

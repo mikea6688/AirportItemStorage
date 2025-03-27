@@ -30,4 +30,6 @@ public class UserOrderDto {
     public boolean isStorageTimeout;
 
     public boolean isRenewal;
+
+    public LocalDateTime estimatedTime;
 }

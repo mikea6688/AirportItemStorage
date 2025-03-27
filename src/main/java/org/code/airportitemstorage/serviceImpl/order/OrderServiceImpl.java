@@ -129,7 +129,6 @@ public class OrderServiceImpl implements OrderService {
         queryOrderLogisticsWrapper.eq("user_id", user.getId());
         List<Long> excludedOrderIds = orderLogisticsMapper.selectList(queryOrderLogisticsWrapper).stream().map(OrderLogistics::getOrderId).toList();
 
-
         var queryOrderWrapper = new QueryWrapper<Order>();
         queryOrderWrapper.eq("user_id", user.getId()).eq("is_lost_item", false);
 
@@ -175,6 +174,8 @@ public class OrderServiceImpl implements OrderService {
 
             var category = storageCategories.stream().filter(x -> x.getId() == order.getCategoryId()).findFirst().orElse(null);
 
+            LocalDateTime estimatedTime = CalculateOrderEstimatedExpireTime(order, user);
+
             UserOrderDto dto = new UserOrderDto();
             dto.setId(order.getId());
             dto.setNum(storageCabinet.getNum());
@@ -185,6 +186,7 @@ public class OrderServiceImpl implements OrderService {
             dto.setStoragePrice(storagePrice);
             dto.setCategoryName(category == null? "其他" : category.getCategoryName());
             dto.setRenewal(order.isRenewal());
+            dto.setEstimatedTime(estimatedTime);
             orderDtoList.add(dto);
         }
 
@@ -194,6 +196,24 @@ public class OrderServiceImpl implements OrderService {
         response.total = orderPage.getTotal();
 
         return response;
+    }
+
+    private LocalDateTime CalculateOrderEstimatedExpireTime(Order order, User user) {
+        LocalDateTime estimatedExpireTime = order.getStorageTime();
+
+        estimatedExpireTime = switch (order.getDateType()) {
+            case ThreeDays -> estimatedExpireTime.plusDays(3);
+            case OneWeek -> estimatedExpireTime.plusWeeks(1);
+            case OneMonth -> estimatedExpireTime.plusMonths(1);
+        };
+
+        if (order.isRenewal())
+            estimatedExpireTime = estimatedExpireTime.plusWeeks(1);
+
+        if (user.getRoleType() == RoleType.VIP)
+            estimatedExpireTime = estimatedExpireTime.plusDays(3);
+
+        return estimatedExpireTime;
     }
 
     @Override
@@ -358,27 +378,23 @@ public class OrderServiceImpl implements OrderService {
 
         var currentDate = LocalDateTime.now();
 
-        var page = new Page<Order>(request.pageIndex, request.pageSize);
+        var page = new Page<Order>(request.getPageIndex(), request.getPageSize());
 
         List<Order> orderList = orderMapper.selectList(null);
 
-        var queryOrderWrapper = new QueryWrapper<Order>();
-        queryOrderWrapper.eq("is_lost_item", false);
+        var queryOrderWrapper = new QueryWrapper<Order>().eq("is_lost_item", false);
 
-        if(request.cabinetNumber != null && !request.getCabinetNumber().isEmpty()){
+        if(request.getCabinetNumber() != null && !request.getCabinetNumber().isEmpty()){
             var cabinetIds = orderList.stream().map(Order::getStorageCabinetId).toList();
 
-            var queryCabinetWrapper = new QueryWrapper<StorageCabinet>();
-            queryCabinetWrapper.in("id", cabinetIds).eq("num", request.getCabinetNumber()).last("limit 1");
-            StorageCabinet storageCabinet = storageCabinetMapper.selectOne(queryCabinetWrapper);
+            StorageCabinet storageCabinet = storageCabinetMapper
+                    .selectOne(new QueryWrapper<StorageCabinet>().in("id", cabinetIds).eq("num", request.getCabinetNumber()).last("limit 1"));
 
             queryOrderWrapper.eq("storage_cabinet_id", storageCabinet.getId());
         }
 
-        if(request.username != null && request.getUsername() != null){
-            var queryUserWrapper = new QueryWrapper<User>();
-            queryUserWrapper.eq("nick_name", request.getUsername());
-            User user = userMapper.selectOne(queryUserWrapper);
+        if (request.getUsername() != null && !request.getUsername().isEmpty()){
+            User user = userMapper.selectOne(new QueryWrapper<User>().eq("account_name", request.getUsername()));
 
             queryOrderWrapper.eq("user_id", user.getId());
         }
@@ -396,14 +412,10 @@ public class OrderServiceImpl implements OrderService {
         var storageCabinets = storageCabinetMapper.selectBatchIds(cabinetIds);
 
         // get paySuccessOrder
-        var queryPaySuccessRecordWrapper = new QueryWrapper<OrderPaySuccessRecord>();
-        queryPaySuccessRecordWrapper.in("order_id", orderIds);
-        var orderPaySuccessRecords = orderPaySuccessRecordMapper.selectList(queryPaySuccessRecordWrapper);
+        var orderPaySuccessRecords = orderPaySuccessRecordMapper.selectList(new QueryWrapper<OrderPaySuccessRecord>().in("order_id", orderIds));
 
         // get users
-        var userQueryWrapper = new QueryWrapper<User>();
-        userQueryWrapper.in("id", userIds);
-        var users = userMapper.selectList(userQueryWrapper);
+        var users = userMapper.selectList(new QueryWrapper<User>().in("id", userIds));
 
         for(Order order : orderPage.getRecords()){
             var storageCabinet = storageCabinets.stream().filter(x -> x.getId() == order.getStorageCabinetId()).findFirst().orElse(null);
@@ -416,25 +428,30 @@ public class OrderServiceImpl implements OrderService {
 
             var isTimeOut = CheckOrderStorageTimeout(order, currentDate);
 
-            UserOrderDto dto = new UserOrderDto();
-            dto.setId(order.getId());
-            dto.setNum(storageCabinet.getNum());
-            dto.setStatus(order.getStorageStatus());
-            dto.setVoucherNumber(order.getVoucherNumber());
-            dto.setStorageDate(order.getStorageTime());
-            dto.setStoredDuration(Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds());
-            dto.setStoragePrice(order.getPrice() == 0 ? order.getEstimatedPrice() : order.getPrice());
-            dto.setUsername(user.getAccountName());
-            dto.setPayment(orderPaySuccessRecord != null);
-            dto.setStorageTimeout(isTimeOut);
-            dto.setRenewal(order.isRenewal());
-            orderDtoList.add(dto);
+            var estimatedTime = CalculateOrderEstimatedExpireTime(order, user);
+
+            if(!request.getIsExpiredOrder() || (order.getStorageStatus() == OrderStorageStatus.Using && estimatedTime.isAfter(currentDate))){
+                UserOrderDto dto = new UserOrderDto();
+                dto.setId(order.getId());
+                dto.setNum(storageCabinet.getNum());
+                dto.setStatus(order.getStorageStatus());
+                dto.setVoucherNumber(order.getVoucherNumber());
+                dto.setStorageDate(order.getStorageTime());
+                dto.setStoredDuration(Duration.between(order.getStorageTime(), LocalDateTime.now()).toSeconds());
+                dto.setStoragePrice(order.getPrice() == 0 ? order.getEstimatedPrice() : order.getPrice());
+                dto.setUsername(user.getAccountName());
+                dto.setPayment(orderPaySuccessRecord != null);
+                dto.setStorageTimeout(isTimeOut);
+                dto.setRenewal(order.isRenewal());
+                dto.setEstimatedTime(estimatedTime);
+                orderDtoList.add(dto);
+            }
         }
 
         var response = new GetAllOrderResponse();
 
         response.setOrders(orderDtoList);
-        response.total = orderPage.getTotal();
+        response.total = request.getIsExpiredOrder() ? (long) orderDtoList.size() : orderPage.getTotal();
 
         return response;
     }

@@ -25,7 +25,7 @@ public class OrderController {
     }
 //  后台管理员看到所有用户订单
     @GetMapping("all")
-    public GetAllOrderResponse getAllOrder(GetAllOrderRequest request){
+    public GetAllOrderResponse getAllOrder(@ModelAttribute GetAllOrderRequest request){
         return orderService.GetAllOrder(request);
     }
 //  用户取物品支付接口
