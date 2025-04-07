@@ -155,3 +155,5 @@ create table if not exists `storage_category` (
 
 # alter table mydb.`order`
 #     add column is_renewal tinyint(1) not null default 0;
+# alter table mydb.`order`
+#     add column category_id bigint not null default 0;
