@@ -6,9 +6,10 @@ import org.code.airportitemstorage.library.request.notification.GetNotifications
 import org.code.airportitemstorage.library.request.notification.UpdateNotificationRequest;
 
 import javax.naming.AuthenticationException;
+import java.util.concurrent.CompletableFuture;
 
 public interface NotificationService {
-    int AddNotification(AddNotificationRequest request) throws AuthenticationException;
+    CompletableFuture<Integer> AddNotification(AddNotificationRequest request) throws AuthenticationException;
 
     int UpdateNotification(UpdateNotificationRequest request) throws AuthenticationException;
 

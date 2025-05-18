@@ -6,9 +6,11 @@ import org.code.airportitemstorage.library.request.notification.GetNotifications
 import org.code.airportitemstorage.library.request.notification.UpdateNotificationRequest;
 import org.code.airportitemstorage.service.notification.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("api/notification")
@@ -16,8 +18,9 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @Async
     @PostMapping("add")
-    public int addNotification(@RequestBody AddNotificationRequest request) throws AuthenticationException {
+    public CompletableFuture<Integer> addNotification(@RequestBody AddNotificationRequest request) throws AuthenticationException {
         return notificationService.AddNotification(request);
     }
 

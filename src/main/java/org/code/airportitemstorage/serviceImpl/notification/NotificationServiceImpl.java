@@ -13,10 +13,12 @@ import org.code.airportitemstorage.library.request.notification.UpdateNotificati
 import org.code.airportitemstorage.mapper.notification.NotificationMapper;
 import org.code.airportitemstorage.service.notification.NotificationService;
 import org.code.airportitemstorage.service.user.UserService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -25,19 +27,25 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserService userService;
 
     @Override
-    public int AddNotification(AddNotificationRequest request) throws AuthenticationException {
-        var user = userService.CheckUserAuthorization();
+    public CompletableFuture<Integer> AddNotification(AddNotificationRequest request) {
+        try {
+//            var user = userService.CheckUserAuthorization();
+//            if (user == null) throw new AuthenticationException();
 
-        if(user == null) throw new AuthenticationException();
+            Notification notification = new Notification();
+            notification.setTitle(request.getTitle());
+            notification.setContent(request.getContent());
+            notification.setDefaultCommentDate();
+            notification.setAuthor("USER");
 
-        Notification notification = new Notification();
-
-        notification.setTitle(request.getTitle());
-        notification.setContent(request.getContent());
-        notification.setDefaultCommentDate();
-        notification.setAuthor(user.getAccountName());
-
-        return notificationMapper.insert(notification);
+            int result = notificationMapper.insert(notification);
+            return CompletableFuture.completedFuture(result);
+        } catch (Exception e) {
+            // 异常处理，可以自定义异常包装返回异常信息给前端等需求场景下处理更细致的逻辑。
+            CompletableFuture<Integer> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
+        }
     }
 
     @Override
