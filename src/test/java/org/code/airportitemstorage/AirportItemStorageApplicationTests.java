@@ -35,6 +35,7 @@ class AirportItemStorageApplicationTests {
 		System.out.println(l);
 	}
 
+	// 对比执行100次时同步和异步的执行速度
 	@Test
 	public void testAsyncConcurrency_100Tasks() throws Exception {
 		long syncStart = System.currentTimeMillis();
@@ -63,6 +64,7 @@ class AirportItemStorageApplicationTests {
 		assert asyncDuration < syncDuration;
 	}
 
+	// 测试项目中并发100次生成结果
 	@Test
 	public void concurrentAddNotificationTest() {
 		int threadCount = 100;
